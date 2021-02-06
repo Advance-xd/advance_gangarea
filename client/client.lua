@@ -11,23 +11,16 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 	end
 
+	PlayerData = ESX.GetPlayerData()
+
 end)
-  
-function fetchowner(area)
-	
-	ESX.TriggerServerCallback('advance_gangarea:fetchowner', function(cb)
-		local owner = cb
-		
-		
-	end, area)
 
-	
-end
-
-
+local takingover = false
+local carea = nil
 
 Citizen.CreateThread(function()
 	while true do
+		
 		for i in pairs(Config.areas) do
 			local plyCoords = GetEntityCoords(GetPlayerPed(-1))
 			local dis = Vdist(plyCoords.x, plyCoords.y, plyCoords.z, Config.areas[i].x, Config.areas[i].y, Config.areas[i].z)
@@ -44,51 +37,119 @@ Citizen.CreateThread(function()
 			
 			
 		end
+
+		if takingover then
+			ESX.Game.Utils.DrawText3D(coords, math.floor(procent*100+0.5) .. "%", 1.0)
+
+			local plyCoords = GetEntityCoords(GetPlayerPed(-1))
+			local dis = Vdist(plyCoords.x, plyCoords.y, plyCoords.z, Config.areas[carea].x, Config.areas[carea].y, Config.areas[carea].z)
+			
+			if dis >= 20 then
+				takingover = false
+				TriggerEvent('esx:showNotification', 'Du gick för långt bort')
+			end
+		end
+		
+
 		Citizen.Wait(1)
 	end
 
 end)
 
 function open(area)
-	owner = nil
+	carea = area
 	ESX.TriggerServerCallback('advance_gangarea:fetchowner', function(cb)
 		owner = cb[1].owner
-		print(owner)
 		
 		
+		
+		if owner == nil then
+			owner = "Ingen"
+		end
+		
+		local elements = {
+			{label = "Ägare: " .. owner, value = 'owner'},
+			--{label = "Ta över område", value = 'start'},
+			--{label = "Hämta belöning", value = 'get'},
+			
+		}
+		if takingover then
+			table.insert(elements, {
+				["label"] = "Sluta ta över område", ["value"] = 'stop'
+			})
+		else
+			if PlayerData.job.name == owner then
+				table.insert(elements, {
+					["label"] = "Hämta belöning", ["value"] = 'get'
+				})
+			else
+				table.insert(elements, {
+					["label"] = "Ta över område", ["value"] = 'start'
+				})
+			end
+		end
+
+		ESX.UI.Menu.Open(
+			'default', GetCurrentResourceName(), 'menu',
+			{
+				title    = "Område " .. area,
+				align    = "center",
+				elements = elements
+
+			},
+			function(data, menu)
+
+				if data.current.value == 'start' then
+					menu.close()
+					takeover(area, owner, PlayerData.job.name)
+					
+				end
+				if data.current.value == 'get' then
+					menu.close()
+					
+				end
+
+				if data.current.value == 'stop' then
+					menu.close()
+					takingover = false
+				end
+
+			end, function(data, menu)
+				menu.close()
+		end)
 	end, area)
 
-	if owner == nil then
-		owner = "Ingen"
-	end
+end
+
+function takeover(area, owner, newowner)
+	local i = 1
+	local message = "Någon tar över erat område!"
 	
-	local elements = {
-		{label = "Ägare: " .. owner, value = 'owner'},
-		{label = "Ta över område", value = 'start'},
-		{label = "Hämta belöning", value = 'get'},
+	coords = Config.areas[area]
+	procent = 0
+	
+	--TriggerEvent('esx_phone:onMessage', source, message, message, coords, "Granne", owner)
+	--TriggerServerEvent('esx_phone:send', owner, "Granne: ", true, false)
+
+	takingover = true
+	while i <= Config.timer and takingover do
+		procent = i/Config.timer
+			
+		Citizen.Wait(1000)
+		i = i + 1
 		
-	}
+	end
+	if takingover then
+		tookover(area, newowner)
+	end
+		
+	
+	takingover = false
+	
+end
 
-	ESX.UI.Menu.Open(
-		'default', GetCurrentResourceName(), 'menu',
-		{
-			title    = "Område " .. area,
-			align    = "center",
-			elements = elements
-
-		},
-		function(data, menu)
-
-			if data.current.value == 'start' then
-				trytakeover(area)
-				menu.close()
-			end
-			if data.current.value == 'get' then
-				menu.close()
-			end
-
-		end, function(data, menu)
-			menu.close()
-	end)
+function tookover(area, newowner)
+	TriggerEvent('esx:showNotification', 'Området är nu ditt')
 
 end
+
