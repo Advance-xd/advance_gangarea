@@ -9,3 +9,22 @@ ESX.RegisterServerCallback('advance_gangarea:fetchowner', function(source, callb
     end)
     
 end)
+
+RegisterServerEvent("advance_gangarea:takeover")
+AddEventHandler("advance_gangarea:takeover", function(area, owner)
+    MySQL.Async.execute('UPDATE gang_area SET owner = @owner WHERE ID = @area', 
+        {
+            ["@owner"] = owner,
+            ["@area"] = area,
+        }
+    )
+end)
+
+
+RegisterServerEvent("advance_gangarea:setreward")
+AddEventHandler("advance_gangarea:setreward", function()
+    MySQL.Async.execute('UPDATE gang_area SET reward = "1"', 
+        {
+        }
+    )
+end)
