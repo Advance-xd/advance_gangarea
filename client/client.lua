@@ -17,6 +17,7 @@ end)
 
 local takingover = false
 local carea = nil
+local sleep = 1
 
 Citizen.CreateThread(function()
 	while true do
@@ -26,15 +27,18 @@ Citizen.CreateThread(function()
 			local dis = Vdist(plyCoords.x, plyCoords.y, plyCoords.z, Config.areas[i].x, Config.areas[i].y, Config.areas[i].z)
 
 			if dis <= 20.0 then
+
 				DrawMarker(27, Config.areas[i].x, Config.areas[i].y, Config.areas[i].z-0.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 0, 255, 0, 100, false, true, 2, false, false, false, false)
 				if dis <= 4 and IsControlJustReleased(0, 38) then
 					open(i)
 				end
 
-			end
+				
+				
 
-			
-			
+			--else
+			--	sleep = 1000
+			end
 			
 		end
 
@@ -50,8 +54,27 @@ Citizen.CreateThread(function()
 			end
 		end
 		
+		
 
-		Citizen.Wait(1)
+		Citizen.Wait(sleep)
+	end
+
+end)
+
+Citizen.CreateThread(function()
+	while true do
+		local year, month, day, hour, minute, second = GetLocalTime()
+		local dag = GetClockDayOfWeek()
+	
+		
+		
+		
+		if hour == "22" and minute == "59" and second == "59" and dag == 0 then
+			TriggerServerEvent('advance_gangarea:setreward')
+		end
+		
+		Citizen.Wait(1000)
+		
 	end
 
 end)
@@ -150,6 +173,7 @@ end
 
 function tookover(area, newowner)
 	TriggerEvent('esx:showNotification', 'Området är nu ditt')
+	TriggerServerEvent('advance_gangarea:takeover', area, newowner)
 
 end
 
