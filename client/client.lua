@@ -17,29 +17,40 @@ end)
 
 local takingover = false
 local carea = nil
-local sleep = 1
+local sleep = 1000
+local neari = nil
+local draw = false
 
 Citizen.CreateThread(function()
-	while true do
-		
+a = nil
+
+	while true do	
 		for i in pairs(Config.areas) do
 			local plyCoords = GetEntityCoords(GetPlayerPed(-1))
 			local dis = Vdist(plyCoords.x, plyCoords.y, plyCoords.z, Config.areas[i].x, Config.areas[i].y, Config.areas[i].z)
 
 			if dis <= 20.0 then
-
-				DrawMarker(27, Config.areas[i].x, Config.areas[i].y, Config.areas[i].z-0.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 0, 255, 0, 100, false, true, 2, false, false, false, false)
-				if dis <= 4 and IsControlJustReleased(0, 38) then
-					open(i)
-				end
-
-				
-				
-
-			--else
-			--	sleep = 1000
+				a = i	
+				draw = true
+				sleep = 1
 			end
 			
+			
+		end
+
+		if draw then
+			neari = a
+			local plyCoords = GetEntityCoords(GetPlayerPed(-1))
+			local dis = Vdist(plyCoords.x, plyCoords.y, plyCoords.z, Config.areas[neari].x, Config.areas[neari].y, Config.areas[neari].z)
+			
+			DrawMarker(27, Config.areas[neari].x, Config.areas[neari].y, Config.areas[neari].z-0.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 0, 255, 0, 100, false, true, 2, false, false, false, false)	
+			if dis <= 4 and IsControlJustReleased(0, 38) then
+				open(neari)
+			end
+			if dis > 20.0 then
+				draw = false
+				sleep = 1000
+			end
 		end
 
 		if takingover then
