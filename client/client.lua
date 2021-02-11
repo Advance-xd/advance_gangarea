@@ -64,28 +64,8 @@ a = nil
 				TriggerEvent('esx:showNotification', 'Du gick för långt bort')
 			end
 		end
-		
-		
 
 		Citizen.Wait(sleep)
-	end
-
-end)
-
-Citizen.CreateThread(function()
-	while true do
-		local year, month, day, hour, minute, second = GetLocalTime()
-		local dag = GetClockDayOfWeek()
-	
-		
-		
-		
-		if hour == "22" and minute == "59" and second == "59" and dag == 0 then
-			TriggerServerEvent('advance_gangarea:setreward')
-		end
-		
-		Citizen.Wait(1000)
-		
 	end
 
 end)
@@ -140,7 +120,7 @@ function open(area)
 				end
 				if data.current.value == 'get' then
 					menu.close()
-					
+					getreward(area)
 				end
 
 				if data.current.value == 'stop' then
@@ -157,13 +137,12 @@ end
 
 function takeover(area, owner, newowner)
 	local i = 1
-	local message = "Någon tar över erat område!"
-	
+
 	coords = Config.areas[area]
 	procent = 0
+
+	messageowner(owner)
 	
-	--TriggerEvent('esx_phone:onMessage', source, message, message, coords, "Granne", owner)
-	--TriggerServerEvent('esx_phone:send', owner, "Granne: ", true, false)
 
 	takingover = true
 	while i <= Config.timer and takingover do
@@ -175,8 +154,7 @@ function takeover(area, owner, newowner)
 	end
 	if takingover then
 		tookover(area, newowner)
-	end
-		
+	end	
 	
 	takingover = false
 	
@@ -188,3 +166,23 @@ function tookover(area, newowner)
 
 end
 
+function getreward(area)
+	ESX.TriggerServerCallback('advance_gangarea:fetchreward', function(cb)
+		reward = cb[1].reward
+		
+		if reward == "1" then
+			TriggerServerEvent('advance_gangarea:getreward', area)
+			TriggerEvent('esx:showNotification', 'Du fick ' .. Config.reward .. " kr")
+		else
+			TriggerEvent('esx:showNotification', 'Det finns inget att hämta')
+		end
+
+	end, area)
+end
+
+function messageowner(owner)
+	local message = "Någon tar över erat område!"
+
+	TriggerEvent('esx_phone:onMessage', source, message, message, coords, "Granne", owner)
+	--TriggerServerEvent('esx_phone:send', owner, "Granne: ", true, false)
+end

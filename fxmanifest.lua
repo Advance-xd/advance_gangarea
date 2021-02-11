@@ -1,7 +1,7 @@
 fx_version 'bodacious'
 game 'gta5'
 
-version '1.25'
+version '1.3'
 
 
 server_scripts {
