@@ -1,7 +1,7 @@
 fx_version 'bodacious'
 game 'gta5'
 
-version '1.3'
+version '1.4'
 
 
 server_scripts {
@@ -14,5 +14,9 @@ server_scripts {
 client_scripts {
     'client/client.lua',
 	'config.lua'
+}
+
+dependencies {
+	'advance_gangs'
 }
 

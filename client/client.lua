@@ -72,66 +72,70 @@ end)
 
 function open(area)
 	carea = area
-	ESX.TriggerServerCallback('advance_gangarea:fetchowner', function(cb)
-		owner = cb[1].owner
-		
-		
-		
-		if owner == nil then
-			owner = "Ingen"
-		end
-		
-		local elements = {
-			{label = "Ägare: " .. owner, value = 'owner'},
-			--{label = "Ta över område", value = 'start'},
-			--{label = "Hämta belöning", value = 'get'},
+	ESX.TriggerServerCallback('advance_gangs:getgang', function(cb)
+		local gang = cb[1].gang
+		ESX.TriggerServerCallback('advance_gangarea:fetchowner', function(cb)
+			owner = cb[1].owner
 			
-		}
-		if takingover then
-			table.insert(elements, {
-				["label"] = "Sluta ta över område", ["value"] = 'stop'
-			})
-		else
-			if PlayerData.job.name == owner then
+			
+			
+			if owner == nil then
+				owner = "Ingen"
+			end
+			
+			local elements = {
+				{label = "Ägare: " .. owner, value = 'owner'},
+				--{label = "Ta över område", value = 'start'},
+				--{label = "Hämta belöning", value = 'get'},
+				
+			}
+			if takingover then
 				table.insert(elements, {
-					["label"] = "Hämta belöning", ["value"] = 'get'
+					["label"] = "Sluta ta över område", ["value"] = 'stop'
 				})
 			else
-				table.insert(elements, {
-					["label"] = "Ta över område", ["value"] = 'start'
-				})
+				if gang == owner then
+					table.insert(elements, {
+						["label"] = "Hämta belöning", ["value"] = 'get'
+					})
+				else
+					table.insert(elements, {
+						["label"] = "Ta över område", ["value"] = 'start'
+					})
+				end
 			end
-		end
-
-		ESX.UI.Menu.Open(
-			'default', GetCurrentResourceName(), 'menu',
-			{
-				title    = "Område " .. area,
-				align    = "center",
-				elements = elements
-
-			},
-			function(data, menu)
-
-				if data.current.value == 'start' then
+	
+			ESX.UI.Menu.Open(
+				'default', GetCurrentResourceName(), 'menu',
+				{
+					title    = "Område " .. area,
+					align    = "center",
+					elements = elements
+	
+				},
+				function(data, menu)
+	
+					if data.current.value == 'start' then
+						menu.close()
+						takeover(area, owner, gang)
+						
+					end
+					if data.current.value == 'get' then
+						menu.close()
+						getreward(area)
+					end
+	
+					if data.current.value == 'stop' then
+						menu.close()
+						takingover = false
+					end
+	
+				end, function(data, menu)
 					menu.close()
-					takeover(area, owner, PlayerData.job.name)
-					
-				end
-				if data.current.value == 'get' then
-					menu.close()
-					getreward(area)
-				end
-
-				if data.current.value == 'stop' then
-					menu.close()
-					takingover = false
-				end
-
-			end, function(data, menu)
-				menu.close()
-		end)
-	end, area)
+			end)
+		end, area)
+	end)
+	
 
 end
 

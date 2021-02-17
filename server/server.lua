@@ -49,10 +49,10 @@ end)
 
 Citizen.CreateThread(function()
 	while true do
-		if os.date("%X") == "00:00:00" then
+        if os.date("%X") == "00:00:00" then
             TriggerEvent('advance_gangarea:setreward')
         end
-		Citizen.Wait(1000)
+        Citizen.Wait(1000)
 	end
 
 end)
